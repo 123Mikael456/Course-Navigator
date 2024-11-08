@@ -1,0 +1,48 @@
+import requests
+from bs4 import BeautifulSoup
+import json
+
+# URL of the course handbook page (replace with actual URL)
+url = 'https://www.example.com/engineering-course-handbook'
+
+# Send a GET request to the URL
+response = requests.get(url)
+if response.status_code == 200:
+    print("Successfully fetched the webpage.")
+else:
+    print(f"Failed to fetch the webpage. Status code: {response.status_code}")
+    exit()
+
+# Parse the HTML content of the page
+soup = BeautifulSoup(response.content, 'html.parser')
+
+# Initialize an empty dictionary to store course information
+course_data = {
+    "program": "Bachelor of Engineering with Honours and Diploma",
+    "courses": []
+}
+
+# Find the HTML elements containing course details
+# Adjust these selectors according to the actual structure of the UTS course handbook
+course_sections = soup.find_all('div', class_='course-section')  # Change selector as needed
+
+for section in course_sections:
+    course_name = section.find('h2').text.strip()  # Change 'h2' to actual tag if different
+    prerequisites = section.find('span', class_='prerequisites').text.strip() if section.find('span', class_='prerequisites') else "N/A"
+    semester_offering = section.find('span', class_='semester-offering').text.strip() if section.find('span', class_='semester-offering') else "N/A"
+
+    # Append course details to the list
+    course_data['courses'].append({
+        "course_name": course_name,
+        "prerequisites": prerequisites,
+        "semester_offering": semester_offering
+    })
+
+# Transform the dictionary into JSON format
+json_data = json.dumps(course_data, indent=4)
+
+# Save to a JSON file
+with open('engineering_course_data.json', 'w') as json_file:
+    json_file.write(json_data)
+
+print("Data has been successfully scraped and saved to engineering_course_data.json")
